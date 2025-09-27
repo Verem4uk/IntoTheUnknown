@@ -3,25 +3,46 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public class MapController : MonoBehaviour
+public class Controller : MonoBehaviour
 {
-    [Header("UI References")]
+    [SerializeField]
+    private Camera MainCamera;
+
+    [Header("Map References")]
     [SerializeField]
     private TMP_InputField InputWidth;
     [SerializeField]
     private TMP_InputField InputHeight;
     [SerializeField]
-    private Button CreateButton;
-    [SerializeField]
-    private Camera MainCamera;
+    private Button CreateMapButton;   
     [SerializeField]
     private MapView MapView;
 
-    private Map Map;
+    [Header("Unit References")]
+    [SerializeField]
+    private TMP_InputField InputMoveRange;
+    [SerializeField]
+    private TMP_InputField InputAttackRange;
+    [SerializeField]
+    private Button PlacePlayerButton;
+    [SerializeField]
+    private Button PlaceEnemyButton;
+
+    private Map Map;    
+    private EditMode Mode = EditMode.Tiles;
+
+    private enum EditMode
+    {
+        Tiles,
+        Player,
+        Enemy
+    }
     
     private void Start()
     {
-        CreateButton.onClick.AddListener(OnCreateMapClicked);
+        CreateMapButton.onClick.AddListener(OnCreateMapClicked);
+        PlacePlayerButton.onClick.AddListener(OnPlacePlayerClicked);
+        PlaceEnemyButton.onClick.AddListener(OnPlaceEnemyClicked);
     }
 
     private void OnCreateMapClicked()
@@ -31,6 +52,24 @@ public class MapController : MonoBehaviour
 
         Map = new Map(width, height);
         MapView.Init(Map);
+    }
+
+    private void OnPlacePlayerClicked() 
+    {
+        Mode = EditMode.Player;
+        Map.RemovePlayer();
+    }
+    private void OnPlaceEnemyClicked()
+    {        
+        Mode = EditMode.Enemy;
+        Map.RemoveEnemy();
+    }
+
+    private void OnPlayerPlaced(TileCell tile)
+    {
+        int moveRange = Mathf.Max(1, int.Parse(InputMoveRange.text));
+        int attackRange = Mathf.Max(1, int.Parse(InputAttackRange.text));
+        Map.PlacePlayer(tile, moveRange, attackRange);
     }
 
     private void Update()
@@ -44,7 +83,38 @@ public class MapController : MonoBehaviour
                 if (view != null)
                 {
                     var cell = view.Cell;
-                    Map.NextType(cell.X, cell.Y);
+
+                    if (Map.Player != null && Map.Player.Tile.Equals(cell))
+                    {
+                        Map.RemovePlayer();
+                    }
+                    if (Map.Enemy != null && Map.Enemy.Tile.Equals(cell))
+                    {
+                        Map.RemoveEnemy();
+                    }
+
+                    switch (Mode)
+                    {
+                        case EditMode.Tiles:                           
+                            Map.NextType(cell);
+                            break;
+                        case EditMode.Player:
+                            if(cell.Tile.Type != TileType.Traversable)
+                            {
+                                Map.ChangeType(cell, TileType.Traversable);
+                            }
+                            OnPlayerPlaced(cell);
+                            Mode = EditMode.Tiles;
+                            break;
+                        case EditMode.Enemy:
+                            if (cell.Tile.Type != TileType.Traversable)
+                            {
+                                Map.ChangeType(cell, TileType.Traversable);
+                            }
+                            Map.PlaceEnemy(cell);
+                            Mode = EditMode.Tiles;
+                            break;
+                    }
                 }
             }
         }
@@ -52,6 +122,8 @@ public class MapController : MonoBehaviour
 
     private void OnDestroy()
     {
-        CreateButton.onClick.RemoveAllListeners();
+        CreateMapButton.onClick.RemoveAllListeners();
+        PlacePlayerButton.onClick.RemoveAllListeners();
+        PlaceEnemyButton.onClick.RemoveAllListeners();
     }
 }

@@ -6,6 +6,12 @@ public class MapView : MonoBehaviour
     private GameObject TilePrefab;
 
     [SerializeField]
+    private GameObject PlayerPrefab;
+
+    [SerializeField]
+    private GameObject EnemyPrefab;
+
+    [SerializeField]
     private Transform TilesTransform;
 
     private Map Map;
@@ -14,6 +20,11 @@ public class MapView : MonoBehaviour
     {
         Map = map;
         map.OnChanged += OnCreateMapClicked;
+
+        map.OnPlayerPlaced += OnPlayerPlaced;
+        map.OnEnemyPlaced += OnEnemyPlaced;
+        map.OnUnitRemoved += OnDestroyUnit;        
+
         OnCreateMapClicked(map.SizeX, map.SizeY);
     }        
 
@@ -33,6 +44,40 @@ public class MapView : MonoBehaviour
                 var cell = Map.Cells[x, y];
                 tileObj.Init(cell);
             }
+        }
+    }
+
+    private void OnPlayerPlaced(Player player)
+    {
+        PlaceUnit(PlayerPrefab, player);
+    }
+
+    private void OnEnemyPlaced(Enemy enemy)
+    {
+        PlaceUnit(EnemyPrefab, enemy);
+    }
+
+    private void PlaceUnit(GameObject prefab, Unit unit)
+    {
+        var tile = unit.Tile;
+        GameObject playerObj = Instantiate(prefab, new Vector3(tile.X, 2, tile.Y), new Quaternion(), TilesTransform);
+        playerObj.GetComponent<UnitView>().Init(unit);   
+
+    }
+
+    private void OnDestroyUnit(Unit unit)
+    {
+        foreach (Transform child in TilesTransform)
+        {
+            var unitView = child.GetComponent<UnitView>();
+            if(unitView == null)
+            {
+                continue;
+            }
+            if (unitView.Unit.Equals(unit))
+            {
+                Destroy(unitView.gameObject);
+            }            
         }
     }
 

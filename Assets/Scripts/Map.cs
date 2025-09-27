@@ -10,6 +10,14 @@ public class Map
 
     public event Action<int, int> OnChanged;
 
+    public event Action<Player> OnPlayerPlaced;
+    public event Action<Enemy> OnEnemyPlaced;
+
+    public event Action<Unit> OnUnitRemoved;
+    
+    public Player Player { get; private set; }
+    public Enemy Enemy { get; private set; } 
+
     public Map(int sizeX, int sizeY)
     {
         SizeX = sizeX;
@@ -30,21 +38,47 @@ public class Map
         OnChanged?.Invoke(sizeX ,sizeY);
     }
 
-    public void ChangeType(int x, int y, TileType newType)
+    public void ChangeType(TileCell cell, TileType newType)
     {
-        var cell = Cells[x, y];
-
         Pool.Return(cell.Tile);
 
         var newLogic = Pool.Get(newType);
         cell.UpdateTile(newLogic);
     }
 
-    public void NextType(int x, int y)
-    {
-        var cell = Cells[x, y];
+    public void NextType(TileCell cell)
+    {        
         var nextType = cell.Tile.NextType();
+        ChangeType(cell, nextType);
+    }
 
-        ChangeType(x, y, nextType);
+    public void PlacePlayer(TileCell cell, int moveRange, int attackRange)
+    {
+        Player = new Player(cell, moveRange, attackRange);
+        OnPlayerPlaced?.Invoke(Player);
+    }
+
+    public void PlaceEnemy(TileCell cell)
+    {
+        Enemy = new Enemy(cell);
+        OnEnemyPlaced?.Invoke(Enemy);
+    }
+
+    public void RemovePlayer()
+    {
+        if(Player != null)
+        {
+            OnUnitRemoved?.Invoke(Player);
+            Player = null;
+        }
+    }
+
+    public void RemoveEnemy()
+    {
+        if (Enemy != null)
+        {
+            OnUnitRemoved?.Invoke(Enemy);
+            Enemy = null;
+        }
     }
 }
