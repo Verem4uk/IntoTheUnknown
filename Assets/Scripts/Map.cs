@@ -1,33 +1,50 @@
-using UnityEngine;
+using System;
 
 public class Map
 {
-    public int Width { get; private set; }
-    public int Height { get; private set; }
-    public Tile[,] Tiles { get; private set; }
+    public TileCell[,] Cells { get; }
+    private readonly TilePool Pool;
 
-    public Map(int width, int height)
+    public int SizeX { get; private set; }
+    public int SizeY { get; private set; }
+
+    public event Action<int, int> OnChanged;
+
+    public Map(int sizeX, int sizeY)
     {
-        Width = width;
-        Height = height;
-        Tiles = new Tile[width, height];
-                
-        for (int x = 0; x < width; x++)
+        SizeX = sizeX;
+        SizeY = sizeY;
+        Pool = new TilePool();
+
+        Cells = new TileCell[sizeX, sizeY];
+
+        for (int x = 0; x < sizeX; x++)
         {
-            for (int y = 0; y < height; y++)
+            for (int y = 0; y < sizeY; y++)
             {
-                Tiles[x, y] = new Tile(x, y, TileType.Traversable);
+                ITile tile = Pool.Get(TileType.Traversable);
+                Cells[x, y] = new TileCell(x, y, tile);
             }
         }
+
+        OnChanged?.Invoke(sizeX ,sizeY);
     }
 
-    public Tile GetTile(int x, int y)
+    public void ChangeType(int x, int y, TileType newType)
     {
-        if (x < 0 || y < 0 || x >= Width || y >= Height)
-        {
-            Debug.LogError("Out of map range");
-            return null;
-        }            
-        return Tiles[x, y];
+        var cell = Cells[x, y];
+
+        Pool.Return(cell.Tile);
+
+        var newLogic = Pool.Get(newType);
+        cell.UpdateTile(newLogic);
+    }
+
+    public void NextType(int x, int y)
+    {
+        var cell = Cells[x, y];
+        var nextType = cell.Tile.NextType();
+
+        ChangeType(x, y, nextType);
     }
 }

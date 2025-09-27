@@ -1,49 +1,43 @@
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class MapView : MonoBehaviour
-{
-    [Header("UI References")]
-    [SerializeField]
-    private TMP_InputField InputWidth;
-    [SerializeField]
-    private TMP_InputField InputHeight;
-    [SerializeField]
-    private Button CreateButton;
-
+{ 
     [SerializeField]
     private GameObject TilePrefab;
 
     [SerializeField]
     private Transform TilesTransform;
 
-    private Map CurrentMap;
+    private Map Map;
 
-    private void Start()
+    public void Init(Map map)
     {
-        CreateButton.onClick.AddListener(OnCreateMapClicked);
-    }
+        Map = map;
+        map.OnChanged += OnCreateMapClicked;
+        OnCreateMapClicked(map.SizeX, map.SizeY);
+    }        
 
-    private void OnCreateMapClicked()
+    private void OnCreateMapClicked(int width, int height)
     {
-        int width = Mathf.Max(1, int.Parse(InputWidth.text));
-        int height = Mathf.Max(1, int.Parse(InputHeight.text));
-                
         foreach (Transform child in TilesTransform)
         {
             Destroy(child.gameObject);
         }
-               
-        CurrentMap = new Map(width, height);
-                
+                          
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                GameObject tileObj = Instantiate(TilePrefab, TilesTransform);
-                tileObj.transform.position = new Vector3(x, 0, y);                    
+                TileView tileObj = Instantiate(TilePrefab, TilesTransform).GetComponent<TileView>();
+                tileObj.transform.position = new Vector3(x, 0, y);
+                var cell = Map.Cells[x, y];
+                tileObj.Init(cell);
             }
         }
+    }
+
+    private void OnDestroy()
+    {
+        Map.OnChanged -= OnCreateMapClicked;
     }
 }
