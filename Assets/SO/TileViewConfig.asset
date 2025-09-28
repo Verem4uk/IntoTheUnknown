@@ -12,10 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e91fac6af5c53e4f9ca8d42a5263394, type: 3}
   m_Name: TileViewConfig
   m_EditorClassIdentifier: Assembly-CSharp::TileViewConfig
-  tileColors:
+  tileTypeColors:
   - type: 0
-    color: {r: 1, g: 1, b: 1, a: 0.5019608}
+    color: {r: 1, g: 1, b: 1, a: 0.78431374}
   - type: 1
-    color: {r: 1, g: 0, b: 0, a: 0.5019608}
+    color: {r: 0, g: 0, b: 0, a: 0.78431374}
   - type: 2
-    color: {r: 1, g: 0.9589707, b: 0, a: 0.5019608}
+    color: {r: 1, g: 0.93159175, b: 0, a: 0.78431374}
+  tileStateColors:
+  - state: 1
+    color: {r: 0.32149816, g: 1, b: 0, a: 0.78431374}
+  - state: 2
+    color: {r: 1, g: 0.018131256, b: 0, a: 0.78431374}
+  - state: 3
+    color: {r: 0.5320754, g: 0.5320754, b: 0.5320754, a: 1}

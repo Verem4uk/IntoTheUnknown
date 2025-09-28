@@ -124,4 +124,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94fc65be56f8cfe4f8db1f4c50f3f6b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TileView
-  visualConfig: {fileID: 11400000, guid: 30be9e03da68c0d44a0e044c79438ad9, type: 2}
+  VisualConfig: {fileID: 11400000, guid: 30be9e03da68c0d44a0e044c79438ad9, type: 2}

@@ -4,11 +4,11 @@ using System;
 [RequireComponent(typeof(Collider))]
 public class TileView : MonoBehaviour
 {
-    public TileCell Cell { get; private set; }
-    private Renderer Renderer;
-
     [SerializeField]
-    private TileViewConfig visualConfig;
+    private TileViewConfig VisualConfig;
+
+    public TileCell Cell { get; private set; }
+    private Renderer Renderer;    
 
     private void Awake()
     {
@@ -24,7 +24,12 @@ public class TileView : MonoBehaviour
 
     public void UpdateView()
     {
-        Renderer.material.color = visualConfig.GetColor(Cell.Tile.Type);
+        if(Cell.State != TileState.Default)
+        {
+            Renderer.material.color = VisualConfig.GetColor(Cell.State);
+            return;
+        }
+        Renderer.material.color = VisualConfig.GetColor(Cell.Tile.Type);
     }
 
     private void OnDestroy()

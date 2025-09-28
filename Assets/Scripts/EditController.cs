@@ -3,10 +3,16 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public class Controller : MonoBehaviour
+public class EditController : MonoBehaviour
 {
     [SerializeField]
     private Camera MainCamera;
+
+    [SerializeField]
+    private Button PlayButton;
+
+    [SerializeField]
+    private PlayController PlayController;
 
     [Header("Map References")]
     [SerializeField]
@@ -26,7 +32,7 @@ public class Controller : MonoBehaviour
     [SerializeField]
     private Button PlacePlayerButton;
     [SerializeField]
-    private Button PlaceEnemyButton;
+    private Button PlaceEnemyButton;        
 
     private Map Map;    
     private EditMode Mode = EditMode.Tiles;
@@ -35,7 +41,8 @@ public class Controller : MonoBehaviour
     {
         Tiles,
         Player,
-        Enemy
+        Enemy,
+        Disabled
     }
     
     private void Start()
@@ -43,6 +50,7 @@ public class Controller : MonoBehaviour
         CreateMapButton.onClick.AddListener(OnCreateMapClicked);
         PlacePlayerButton.onClick.AddListener(OnPlacePlayerClicked);
         PlaceEnemyButton.onClick.AddListener(OnPlaceEnemyClicked);
+        PlayButton.onClick.AddListener(OnGameStarted);
     }
 
     private void OnCreateMapClicked()
@@ -72,9 +80,19 @@ public class Controller : MonoBehaviour
         Map.PlacePlayer(tile, moveRange, attackRange);
     }
 
+    private void OnGameStarted()
+    {
+        if(Map != null && Map.Player != null && Map.Enemy != null)
+        {
+            Mode = EditMode.Disabled;
+            PlayController.Init(Map);
+            PlayController.enabled = true;
+        }
+    }
+
     private void Update()
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame) 
+        if (Mouse.current.leftButton.wasPressedThisFrame && Mode != EditMode.Disabled) 
         {
             var ray = MainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
             if (Physics.Raycast(ray, out RaycastHit hit))
@@ -83,40 +101,44 @@ public class Controller : MonoBehaviour
                 if (view != null)
                 {
                     var cell = view.Cell;
-
-                    if (Map.Player != null && Map.Player.Tile.Equals(cell))
-                    {
-                        Map.RemovePlayer();
-                    }
-                    if (Map.Enemy != null && Map.Enemy.Tile.Equals(cell))
-                    {
-                        Map.RemoveEnemy();
-                    }
-
-                    switch (Mode)
-                    {
-                        case EditMode.Tiles:                           
-                            Map.NextType(cell);
-                            break;
-                        case EditMode.Player:
-                            if(cell.Tile.Type != TileType.Traversable)
-                            {
-                                Map.ChangeType(cell, TileType.Traversable);
-                            }
-                            OnPlayerPlaced(cell);
-                            Mode = EditMode.Tiles;
-                            break;
-                        case EditMode.Enemy:
-                            if (cell.Tile.Type != TileType.Traversable)
-                            {
-                                Map.ChangeType(cell, TileType.Traversable);
-                            }
-                            Map.PlaceEnemy(cell);
-                            Mode = EditMode.Tiles;
-                            break;
-                    }
+                    Operate(cell);
                 }
             }
+        }
+    }
+
+    private void Operate(TileCell cell)
+    {
+        if (Map.Player != null && Map.Player.Tile.Equals(cell))
+        {
+            Map.RemovePlayer();
+        }
+        if (Map.Enemy != null && Map.Enemy.Tile.Equals(cell))
+        {
+            Map.RemoveEnemy();
+        }
+
+        switch (Mode)
+        {
+            case EditMode.Tiles:
+                Map.NextType(cell);
+                break;
+            case EditMode.Player:
+                if (cell.Tile.Type != TileType.Traversable)
+                {
+                    Map.ChangeType(cell, TileType.Traversable);
+                }
+                OnPlayerPlaced(cell);
+                Mode = EditMode.Tiles;
+                break;
+            case EditMode.Enemy:
+                if (cell.Tile.Type != TileType.Traversable)
+                {
+                    Map.ChangeType(cell, TileType.Traversable);
+                }
+                Map.PlaceEnemy(cell);
+                Mode = EditMode.Tiles;
+                break;
         }
     }
 
@@ -125,5 +147,6 @@ public class Controller : MonoBehaviour
         CreateMapButton.onClick.RemoveAllListeners();
         PlacePlayerButton.onClick.RemoveAllListeners();
         PlaceEnemyButton.onClick.RemoveAllListeners();
+        PlayButton.onClick.RemoveAllListeners();
     }
 }

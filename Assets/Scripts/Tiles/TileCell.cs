@@ -5,6 +5,7 @@ public class TileCell
     public int X { get; }
     public int Y { get; }
     public ITile Tile { get; private set; }
+    public TileState State { get; private set; }
 
     public event Action OnChanged;
 
@@ -14,6 +15,7 @@ public class TileCell
         Y = y;
 
         Tile = tile;
+        State = TileState.Default;
     }
 
     public void UpdateTile(ITile tile)
@@ -21,12 +23,26 @@ public class TileCell
         Tile = tile;
         OnChanged?.Invoke();
     }
+
+    public void Mark(TileState state)
+    {
+        State = state;
+        OnChanged?.Invoke();
+    }
 }
 
 
 public enum TileType
 {
-    Traversable = 0, 
-    Obstacle = 1,    
-    Cover = 2        
+    Traversable,
+    Obstacle,
+    Cover
+}
+
+public enum TileState
+{
+    Default,
+    MovePath,
+    AttackPath,
+    UnavailablePath
 }

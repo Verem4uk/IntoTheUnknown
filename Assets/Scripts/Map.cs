@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 public class Map
 {
@@ -36,6 +37,73 @@ public class Map
         }
 
         OnChanged?.Invoke(sizeX ,sizeY);
+    }
+
+    public void CheckCell(TileCell cell)
+    {
+        if (cell.Tile.Type == TileType.Obstacle || cell == Player.Tile)
+            return;
+
+        List<TileCell> path;
+
+        if (cell == Enemy.Tile)
+        {            
+            path = new Pathfinder(this).FindPath(Player.Tile, cell, forAttack: true);
+            if (path == null) return;
+            CleanPath();
+
+            if (path.Count - 1 <= Player.AttackRange)
+            {
+                for (int i = 1; i < path.Count; i++)
+                    path[i].Mark(TileState.AttackPath);
+            }
+            else 
+            {
+                for (int i = 1; i < path.Count; i++)
+                    path[i].Mark(TileState.UnavailablePath);
+            }
+        }
+        else
+        {            
+            path = new Pathfinder(this).FindPath(Player.Tile, cell, forAttack: false);
+            if (path == null) return;
+            CleanPath();
+
+            if (path.Count - 1 <= Player.MoveRange)
+            {
+                for (int i = 1; i < path.Count; i++)
+                    path[i].Mark(TileState.MovePath);
+            }
+            else
+            {
+                for (int i = 1; i < path.Count; i++)
+                    path[i].Mark(TileState.UnavailablePath);
+            }
+        }
+    }
+
+
+    private void CleanPath()
+    {
+        for (int x = 0; x < SizeX; x++)
+        {
+            for (int y = 0; y < SizeY; y++)
+            {
+                var tile = Cells[x, y];
+                tile.Mark(TileState.Default);                
+            }
+        }
+    }
+
+    public IEnumerable<TileCell> GetNeighbors(TileCell cell)
+    {
+        int x = cell.X;
+        int y = cell.Y;
+
+        if (x > 0) yield return Cells[x - 1, y];         // West
+        if (x < SizeX - 1) yield return Cells[x + 1, y]; // East
+        if (y > 0) yield return Cells[x, y - 1];         // South
+        if (y < SizeY - 1) yield return Cells[x, y + 1]; // North
     }
 
     public void ChangeType(TileCell cell, TileType newType)
