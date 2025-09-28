@@ -3,11 +3,11 @@ using UnityEngine;
 
 public class Pathfinder
 {
-    private readonly Map map;
+    private readonly Map Map;
 
     public Pathfinder(Map map)
     {
-        this.map = map;
+        Map = map;
     }
 
     public List<TileCell> FindPath(TileCell start, TileCell goal, bool forAttack = false)
@@ -24,16 +24,24 @@ public class Pathfinder
             var current = openSet.Dequeue();
 
             if (current == goal)
+            {
                 return ReconstructPath(cameFrom, current);
+            }               
 
-            foreach (var neighbor in map.GetNeighbors(current))
+            foreach (var neighbor in Map.GetNeighbors(current))
             {                
                 if (neighbor.Tile.Type == TileType.Obstacle)
+                {
                     continue;
+                }                    
                 if (!forAttack && neighbor.Tile.Type == TileType.Cover)
+                {
                     continue;
-                if (!forAttack && map.Enemy.Tile.Equals(neighbor))
+                }                    
+                if (!forAttack && Map.Enemy.Tile.Equals(neighbor))
+                {
                     continue;
+                }                    
 
                 int tentativeG = gScore[current] + 1;
                 if (!gScore.ContainsKey(neighbor) || tentativeG < gScore[neighbor])

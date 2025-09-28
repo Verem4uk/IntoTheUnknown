@@ -25,9 +25,9 @@ public class PlayController : MonoBehaviour
                     var cell = view.Cell;
                     if (cell.Tile.Type == TileType.Obstacle || cell == Map.Player.Tile || cell.Tile.Type == TileType.Cover)
                         return;
-                    if(cell == Map.Enemy.Tile && Map.TryToFindAttackPath(cell, out var attackPath))
-                    {                        
-                        //attack enemy
+                    if(cell == Map.Enemy.Tile)
+                    {
+                        Map.TryToFindAttackPath(cell, out var attackPath);
                         return;
                     }
 

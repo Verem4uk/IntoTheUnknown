@@ -9,16 +9,15 @@ public class Map
 
     public int SizeX { get; private set; }
     public int SizeY { get; private set; }
-
-    public event Action<int, int> OnChanged;
-
-    public event Action<Player> OnPlayerPlaced;
-    public event Action<Enemy> OnEnemyPlaced;
-
-    public event Action<Unit> OnUnitRemoved;
     
     public Player Player { get; private set; }
-    public Enemy Enemy { get; private set; } 
+    public Enemy Enemy { get; private set; }
+
+
+    public event Action<int, int> OnChanged;
+    public event Action<Player> OnPlayerPlaced;
+    public event Action<Enemy> OnEnemyPlaced;
+    public event Action<Unit> OnUnitRemoved;
 
     public Map(int sizeX, int sizeY)
     {
@@ -48,12 +47,16 @@ public class Map
         if (path.Count - 1 <= Player.MoveRange)
         {
             for (int i = 1; i < path.Count; i++)
+            {
                 path[i].Mark(TileState.MovePath);
+            }                
         }
         else
         {
             for (int i = 1; i < path.Count; i++)
+            {
                 path[i].Mark(TileState.UnavailablePath);
+            }                
         }
 
         return true;
@@ -62,18 +65,26 @@ public class Map
     public bool TryToFindAttackPath(TileCell cell, out List<TileCell> path)
     {        
         path = new Pathfinder(this).FindPath(Player.Tile, cell, forAttack: true);
-        if (path == null) return false;
+        if (path == null)
+        {
+            return false;
+        }
+
         CleanPath();
 
         if (path.Count - 1 <= Player.AttackRange)
         {
             for (int i = 1; i < path.Count; i++)
-            path[i].Mark(TileState.AttackPath);
+            {
+                path[i].Mark(TileState.AttackPath);
+            }            
         }
         else
         {
             for (int i = 1; i < path.Count; i++)
-            path[i].Mark(TileState.UnavailableAttack);
+            {
+                path[i].Mark(TileState.UnavailableAttack);
+            }            
         }
         return true;
     }
@@ -95,11 +106,24 @@ public class Map
         int x = cell.X;
         int y = cell.Y;
 
-        if (x > 0) yield return Cells[x - 1, y];         // West
-        if (x < SizeX - 1) yield return Cells[x + 1, y]; // East
-        if (y > 0) yield return Cells[x, y - 1];         // South
-        if (y < SizeY - 1) yield return Cells[x, y + 1]; // North
+        if (x > 0)
+        {
+            yield return Cells[x - 1, y]; // West
+        }
+        if (x < SizeX - 1)
+        {
+            yield return Cells[x + 1, y]; // East
+        }
+        if (y > 0)
+        {
+            yield return Cells[x, y - 1]; // South
+        }
+        if (y < SizeY - 1)
+        {
+            yield return Cells[x, y + 1]; // North
+        }
     }
+
 
     public void ChangeType(TileCell cell, TileType newType)
     {

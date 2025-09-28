@@ -2,29 +2,29 @@ using System.Collections.Generic;
 
 public class PriorityQueue<T>
 {
-    private List<(T item, int priority)> elements = new();
+    private List<(T item, int priority)> Elements = new();
 
-    public int Count => elements.Count;
+    public int Count => Elements.Count;
 
     public void Enqueue(T item, int priority)
     {
-        elements.Add((item, priority));
+        Elements.Add((item, priority));
     }
 
     public T Dequeue()
     {
         int bestIndex = 0;
 
-        for (int i = 1; i < elements.Count; i++)
+        for (int i = 1; i < Elements.Count; i++)
         {
-            if (elements[i].priority < elements[bestIndex].priority)
+            if (Elements[i].priority < Elements[bestIndex].priority)
             {
                 bestIndex = i;
             }
         }
 
-        T bestItem = elements[bestIndex].item;
-        elements.RemoveAt(bestIndex);
+        T bestItem = Elements[bestIndex].item;
+        Elements.RemoveAt(bestIndex);
         return bestItem;
     }
 }

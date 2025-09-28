@@ -5,16 +5,15 @@ using UnityEngine;
 public class PlayerView : UnitView
 {
     [SerializeField]
-    public float moveSpeed = 3f;
+    public float MoveSpeed = 3f;
 
-    private Animator animator;
-
-    private Queue<Vector3> path = new Queue<Vector3>();
-    private bool isMoving = false;
+    private Animator Animator;
+    private Queue<Vector3> Path = new Queue<Vector3>();
+    private bool IsMoving = false;
 
     private void Start()
     {
-        animator = GetComponent<Animator>();        
+        Animator = GetComponent<Animator>();        
     }
 
     public override void Init(Unit unit)
@@ -25,32 +24,34 @@ public class PlayerView : UnitView
 
     private void OnMove(List<TileCell> pathCells)
     {
-        path.Clear();
+        Path.Clear();
         foreach (var cell in pathCells)
         {
             Vector3 worldPos = new Vector3(cell.X, 0, cell.Y);
-            path.Enqueue(worldPos);
+            Path.Enqueue(worldPos);
         }
 
-        if (!isMoving && path.Count > 0)
+        if (!IsMoving && Path.Count > 0)
+        {
             StartCoroutine(MoveAlongPath());
+        }            
     }
 
     private IEnumerator MoveAlongPath()
     {
-        isMoving = true;
-        animator.SetFloat("Speed", moveSpeed); 
+        IsMoving = true;
+        Animator.SetFloat("Speed", MoveSpeed); 
 
-        while (path.Count > 0)
+        while (Path.Count > 0)
         {
-            Vector3 target = path.Dequeue();
+            Vector3 target = Path.Dequeue();
 
             while (Vector3.Distance(transform.position, target) > 0.05f)
             {
                 Vector3 dir = (target - transform.position).normalized;
                 dir.y = 0;
 
-                transform.position += dir * moveSpeed * Time.deltaTime;
+                transform.position += dir * MoveSpeed * Time.deltaTime;
                 transform.forward = dir; 
                 yield return null;
             }
@@ -59,8 +60,8 @@ public class PlayerView : UnitView
             yield return null;
         }
 
-        animator.SetFloat("Speed", 0f); 
-        isMoving = false;
+        Animator.SetFloat("Speed", 0f); 
+        IsMoving = false;
     }
 
     public void OnFootstep()

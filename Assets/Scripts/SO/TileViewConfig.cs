@@ -25,7 +25,9 @@ public class TileViewConfig : ScriptableObject
         foreach (var entry in tileTypeColors)
         {
             if (entry.type == type)
+            {
                 return entry.color;
+            }                
         }
 
         return Color.white; 
@@ -36,7 +38,9 @@ public class TileViewConfig : ScriptableObject
         foreach (var entry in tileStateColors)
         {
             if (entry.state == state)
+            {
                 return entry.color;
+            }                
         }
 
         return Color.white;

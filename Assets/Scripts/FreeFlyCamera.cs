@@ -3,9 +3,12 @@ using UnityEngine.InputSystem;
 
 public class FreeFlyCameraNewInput : MonoBehaviour
 {
-    public float moveSpeed = 10f;
-    public float fastMoveSpeed = 50f;
-    public float sensitivity = 2f;
+    [SerializeField]
+    private float MoveSpeed = 10f;
+    [SerializeField]
+    public float FastMoveSpeed = 50f;
+    [SerializeField]
+    public float Sensitivity = 2f;
 
     private float rotationX;
     private float rotationY;
@@ -24,22 +27,40 @@ public class FreeFlyCameraNewInput : MonoBehaviour
                 
         if (mouse.rightButton.isPressed)
         {
-            rotationX += mouse.delta.x.ReadValue() * sensitivity * Time.deltaTime;
-            rotationY -= mouse.delta.y.ReadValue() * sensitivity * Time.deltaTime;
+            rotationX += mouse.delta.x.ReadValue() * Sensitivity * Time.deltaTime;
+            rotationY -= mouse.delta.y.ReadValue() * Sensitivity * Time.deltaTime;
             rotationY = Mathf.Clamp(rotationY, -90, 90);
 
             transform.rotation = Quaternion.Euler(rotationY, rotationX, 0);
         }
 
-        float speed = keyboard.leftShiftKey.isPressed ? fastMoveSpeed : moveSpeed;
+        float speed = keyboard.leftShiftKey.isPressed ? FastMoveSpeed : MoveSpeed;
 
         Vector3 direction = Vector3.zero;
-        if (keyboard.wKey.isPressed) direction += Vector3.forward;
-        if (keyboard.sKey.isPressed) direction += Vector3.back;
-        if (keyboard.aKey.isPressed) direction += Vector3.left;
-        if (keyboard.dKey.isPressed) direction += Vector3.right;
-        if (keyboard.eKey.isPressed) direction += Vector3.up;
-        if (keyboard.qKey.isPressed) direction += Vector3.down;
+        if (keyboard.wKey.isPressed)
+        {
+            direction += Vector3.forward;
+        }
+        if (keyboard.sKey.isPressed)
+        {
+            direction += Vector3.back;
+        }
+        if (keyboard.aKey.isPressed)
+        {
+            direction += Vector3.left;
+        }
+        if (keyboard.dKey.isPressed)
+        {
+            direction += Vector3.right;
+        }
+        if (keyboard.eKey.isPressed)
+        {
+            direction += Vector3.up;
+        }
+        if (keyboard.qKey.isPressed)
+        {
+            direction += Vector3.down;
+        }
 
         transform.Translate(direction * speed * Time.deltaTime, Space.Self);
     }

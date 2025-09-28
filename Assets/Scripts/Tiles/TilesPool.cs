@@ -2,16 +2,18 @@ using System.Collections.Generic;
 
 public class TilePool
 {    
-    private readonly Dictionary<TileType, Queue<ITile>> pool = new();
+    private readonly Dictionary<TileType, Queue<ITile>> Pool = new();
 
     public ITile Get(TileType type)
     {
-        if (!pool.ContainsKey(type))
-            pool[type] = new Queue<ITile>();
-
-        if (pool[type].Count > 0)
+        if (!Pool.ContainsKey(type))
         {
-            return pool[type].Dequeue();
+            Pool[type] = new Queue<ITile>();
+        }
+            
+        if (Pool[type].Count > 0)
+        {
+            return Pool[type].Dequeue();
         }
                 
         return type switch
@@ -24,11 +26,11 @@ public class TilePool
 
     public void Return(ITile tile)
     {
-        if (!pool.ContainsKey(tile.Type))
+        if (!Pool.ContainsKey(tile.Type))
         {
-            pool[tile.Type] = new Queue<ITile>();
+            Pool[tile.Type] = new Queue<ITile>();
         }
 
-        pool[tile.Type].Enqueue(tile);
+        Pool[tile.Type].Enqueue(tile);
     }
 }

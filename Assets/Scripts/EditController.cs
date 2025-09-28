@@ -7,13 +7,10 @@ public class EditController : MonoBehaviour
 {
     [SerializeField]
     private Camera MainCamera;
-
     [SerializeField]
     private Button PlayButton;
-
     [SerializeField]
     private Button EditButton;
-
     [SerializeField]
     private PlayController PlayController;
 
