@@ -34,7 +34,13 @@ public class PlayController : MonoBehaviour
                     if(Map.TryToFindMovePath(cell, out var movePath) && movePath[1].State == TileState.MovePath)
                     {
                         Map.Player.MoveTo(movePath);
-                    }                    
+                    }
+                    return;
+                }
+                var enemy = hit.collider.GetComponent<EnemyView>().Unit;
+                if(enemy != null && enemy.Tile.State == TileState.AttackPath)
+                {
+                    Map.RemoveEnemy();
                 }
             }
         }

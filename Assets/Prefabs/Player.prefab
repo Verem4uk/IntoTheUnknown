@@ -231,7 +231,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 492178783096486196}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31651ac2523f01043a91363c22786089, type: 3}
+  m_Script: {fileID: 11500000, guid: 590f4e6b9c4156c488b9fe55b6617086, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnitView
   moveSpeed: 3
