@@ -23,7 +23,18 @@ public class PlayController : MonoBehaviour
                 if (view != null)
                 {
                     var cell = view.Cell;
-                    Map.CheckCell(cell);
+                    if (cell.Tile.Type == TileType.Obstacle || cell == Map.Player.Tile || cell.Tile.Type == TileType.Cover)
+                        return;
+                    if(cell == Map.Enemy.Tile && Map.TryToFindAttackPath(cell, out var attackPath))
+                    {                        
+                        //attack enemy
+                        return;
+                    }
+
+                    if(Map.TryToFindMovePath(cell, out var movePath) && movePath[1].State == TileState.MovePath)
+                    {
+                        Map.Player.MoveTo(movePath);
+                    }                    
                 }
             }
         }

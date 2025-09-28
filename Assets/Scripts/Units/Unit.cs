@@ -1,8 +1,9 @@
 using System;
+using System.Collections.Generic;
 
 public abstract class Unit
 {
-    public event Action<TileCell> OnMove;
+    public event Action<List<TileCell>> OnMove;
     public TileCell Tile { get; protected set; }
         
     public Unit(TileCell tile)
@@ -10,9 +11,9 @@ public abstract class Unit
         Tile = tile;
     }
 
-    public void MoveTo(TileCell newTile)
+    public void MoveTo(List<TileCell> path)
     {
-        Tile = newTile;
-        OnMove?.Invoke(newTile);
+        Tile = path[path.Count - 1];
+        OnMove?.Invoke(path);
     }
 }

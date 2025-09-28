@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 public class Map
 {
@@ -39,49 +40,43 @@ public class Map
         OnChanged?.Invoke(sizeX ,sizeY);
     }
 
-    public void CheckCell(TileCell cell)
-    {
-        if (cell.Tile.Type == TileType.Obstacle || cell == Player.Tile)
-            return;
-
-        List<TileCell> path;
-
-        if (cell == Enemy.Tile)
-        {            
-            path = new Pathfinder(this).FindPath(Player.Tile, cell, forAttack: true);
-            if (path == null) return;
-            CleanPath();
-
-            if (path.Count - 1 <= Player.AttackRange)
-            {
-                for (int i = 1; i < path.Count; i++)
-                    path[i].Mark(TileState.AttackPath);
-            }
-            else 
-            {
-                for (int i = 1; i < path.Count; i++)
-                    path[i].Mark(TileState.UnavailablePath);
-            }
+    public bool TryToFindMovePath(TileCell cell, out List<TileCell> path)
+    {        
+        path = new Pathfinder(this).FindPath(Player.Tile, cell, forAttack: false);
+        if (path == null) return false;
+        CleanPath();
+        if (path.Count - 1 <= Player.MoveRange)
+        {
+            for (int i = 1; i < path.Count; i++)
+                path[i].Mark(TileState.MovePath);
         }
         else
-        {            
-            path = new Pathfinder(this).FindPath(Player.Tile, cell, forAttack: false);
-            if (path == null) return;
-            CleanPath();
-
-            if (path.Count - 1 <= Player.MoveRange)
-            {
-                for (int i = 1; i < path.Count; i++)
-                    path[i].Mark(TileState.MovePath);
-            }
-            else
-            {
-                for (int i = 1; i < path.Count; i++)
-                    path[i].Mark(TileState.UnavailablePath);
-            }
+        {
+            for (int i = 1; i < path.Count; i++)
+                path[i].Mark(TileState.UnavailablePath);
         }
+
+        return true;
     }
 
+    public bool TryToFindAttackPath(TileCell cell, out List<TileCell> path)
+    {        
+        path = new Pathfinder(this).FindPath(Player.Tile, cell, forAttack: true);
+        if (path == null) return false;
+        CleanPath();
+
+        if (path.Count - 1 <= Player.AttackRange)
+        {
+            for (int i = 1; i < path.Count; i++)
+            path[i].Mark(TileState.AttackPath);
+        }
+        else
+        {
+            for (int i = 1; i < path.Count; i++)
+            path[i].Mark(TileState.UnavailablePath);
+        }
+        return true;
+    }
 
     private void CleanPath()
     {
