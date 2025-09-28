@@ -73,12 +73,12 @@ public class Map
         else
         {
             for (int i = 1; i < path.Count; i++)
-            path[i].Mark(TileState.UnavailablePath);
+            path[i].Mark(TileState.UnavailableAttack);
         }
         return true;
     }
 
-    private void CleanPath()
+    public void CleanPath()
     {
         for (int x = 0; x < SizeX; x++)
         {

@@ -44,5 +44,6 @@ public enum TileState
     Default,
     MovePath,
     AttackPath,
-    UnavailablePath
+    UnavailablePath,
+    UnavailableAttack
 }

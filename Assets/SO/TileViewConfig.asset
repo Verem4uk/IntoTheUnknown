@@ -16,7 +16,7 @@ MonoBehaviour:
   - type: 0
     color: {r: 1, g: 1, b: 1, a: 0.78431374}
   - type: 1
-    color: {r: 0, g: 0, b: 0, a: 0.78431374}
+    color: {r: 0, g: 0, b: 0, a: 1}
   - type: 2
     color: {r: 1, g: 0.93159175, b: 0, a: 0.78431374}
   tileStateColors:
@@ -25,4 +25,6 @@ MonoBehaviour:
   - state: 2
     color: {r: 1, g: 0.018131256, b: 0, a: 0.78431374}
   - state: 3
-    color: {r: 0.5320754, g: 0.5320754, b: 0.5320754, a: 1}
+    color: {r: 0.2773432, g: 0.3660378, b: 0.2534639, a: 0.78431374}
+  - state: 4
+    color: {r: 0.5245282, g: 0.26424345, b: 0.26424345, a: 0.78431374}

@@ -12,6 +12,9 @@ public class EditController : MonoBehaviour
     private Button PlayButton;
 
     [SerializeField]
+    private Button EditButton;
+
+    [SerializeField]
     private PlayController PlayController;
 
     [Header("Map References")]
@@ -29,6 +32,8 @@ public class EditController : MonoBehaviour
     private TMP_InputField InputMoveRange;
     [SerializeField]
     private TMP_InputField InputAttackRange;
+    [SerializeField]
+    private Button ApplyForExisted;
     [SerializeField]
     private Button PlacePlayerButton;
     [SerializeField]
@@ -51,6 +56,8 @@ public class EditController : MonoBehaviour
         PlacePlayerButton.onClick.AddListener(OnPlacePlayerClicked);
         PlaceEnemyButton.onClick.AddListener(OnPlaceEnemyClicked);
         PlayButton.onClick.AddListener(OnGameStarted);
+        EditButton.onClick.AddListener(OnEditStarted);
+        ApplyForExisted.onClick.AddListener(OnApplyNewParametres);
     }
 
     private void OnCreateMapClicked()
@@ -60,6 +67,18 @@ public class EditController : MonoBehaviour
 
         Map = new Map(width, height);
         MapView.Init(Map);
+        Mode = EditMode.Tiles;
+        PlayController.enabled = false;
+    }
+
+    private void OnApplyNewParametres()
+    {
+        if(Map != null && Map.Player != null)
+        {
+            int moveRange = Mathf.Max(1, int.Parse(InputMoveRange.text));
+            int attackRange = Mathf.Max(1, int.Parse(InputAttackRange.text));
+            Map.Player.UpdateParametres(moveRange, attackRange);
+        }
     }
 
     private void OnPlacePlayerClicked() 
@@ -90,18 +109,36 @@ public class EditController : MonoBehaviour
         }
     }
 
+    private void OnEditStarted()
+    {
+        Mode = EditMode.Tiles;
+        PlayController.enabled = false;
+        Map.CleanPath();
+    }
+
     private void Update()
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame && Mode != EditMode.Disabled) 
+        if (Mouse.current.leftButton.wasPressedThisFrame) 
         {
             var ray = MainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
-                var view = hit.collider.GetComponent<TileView>();
-                if (view != null)
+                if (Mode != EditMode.Disabled)
                 {
-                    var cell = view.Cell;
-                    Operate(cell);
+                    var view = hit.collider.GetComponent<TileView>();
+                    if (view != null)
+                    {
+                        var cell = view.Cell;
+                        Operate(cell);
+                        return;
+                    }
+                }               
+
+                var enemy = hit.collider.GetComponent<EnemyView>();
+                if (enemy != null && enemy.Unit.Tile.State == TileState.AttackPath)
+                {
+                    Map.RemoveEnemy();
+                    OnEditStarted();
                 }
             }
         }
@@ -148,5 +185,6 @@ public class EditController : MonoBehaviour
         PlacePlayerButton.onClick.RemoveAllListeners();
         PlaceEnemyButton.onClick.RemoveAllListeners();
         PlayButton.onClick.RemoveAllListeners();
+        ApplyForExisted.onClick.RemoveAllListeners();
     }
 }
