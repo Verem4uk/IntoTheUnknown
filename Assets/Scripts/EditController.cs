@@ -81,7 +81,11 @@ public class EditController : MonoBehaviour
     private void OnPlacePlayerClicked() 
     {
         Mode = EditMode.Player;
-        Map.RemovePlayer();
+        if(Map.Player != null)
+        {
+            Map.Player.OnMoveCompleted -= OnPlayerMovementCompleted;
+            Map.RemovePlayer();
+        }        
     }
     private void OnPlaceEnemyClicked()
     {        
@@ -94,6 +98,16 @@ public class EditController : MonoBehaviour
         int moveRange = Mathf.Max(1, int.Parse(InputMoveRange.text));
         int attackRange = Mathf.Max(1, int.Parse(InputAttackRange.text));
         Map.PlacePlayer(tile, moveRange, attackRange);
+        Map.Player.OnMoveCompleted += OnPlayerMovementCompleted;
+    }
+
+    private void OnPlayerMovementCompleted()
+    {
+        if(Map.Enemy.Tile.State == TileState.AttackPath)
+        {
+            Map.RemoveEnemy();
+            OnEditStarted();
+        }        
     }
 
     private void OnGameStarted()
@@ -145,6 +159,7 @@ public class EditController : MonoBehaviour
     {
         if (Map.Player != null && Map.Player.Tile.Equals(cell))
         {
+            Map.Player.OnMoveCompleted -= OnPlayerMovementCompleted;
             Map.RemovePlayer();
         }
         if (Map.Enemy != null && Map.Enemy.Tile.Equals(cell))

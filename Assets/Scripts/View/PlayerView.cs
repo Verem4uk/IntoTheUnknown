@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,9 +8,12 @@ public class PlayerView : UnitView
     [SerializeField]
     public float MoveSpeed = 3f;
 
+    public event Action OnMoveCompleted;
+
     private Animator Animator;
     private Queue<Vector3> Path = new Queue<Vector3>();
     private bool IsMoving = false;
+    private Player Player;
 
     private void Start()
     {
@@ -19,7 +23,12 @@ public class PlayerView : UnitView
     public override void Init(Unit unit)
     {
         base.Init(unit);
-        Unit.OnMove += OnMove;        
+        
+        if (unit is Player player)
+        {
+            player.OnMove += OnMove;
+            Player = player; 
+        }
     }
 
     private void OnMove(List<TileCell> pathCells)
@@ -31,7 +40,13 @@ public class PlayerView : UnitView
             Path.Enqueue(worldPos);
         }
 
-        if (!IsMoving && Path.Count > 0)
+        if(Path.Count == 0)
+        {
+            Player.CallBackMovementComplete();
+            return;
+        }
+
+        if (!IsMoving)
         {
             StartCoroutine(MoveAlongPath());
         }            
@@ -62,6 +77,7 @@ public class PlayerView : UnitView
 
         Animator.SetFloat("Speed", 0f); 
         IsMoving = false;
+        Player.CallBackMovementComplete();
     }
 
     public void OnFootstep()
@@ -71,6 +87,6 @@ public class PlayerView : UnitView
 
     private void OnDestroy()
     {
-        Unit.OnMove -= OnMove;
+        Player.OnMove -= OnMove;
     }
 }

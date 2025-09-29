@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 
 public class Map
 {
@@ -42,8 +42,13 @@ public class Map
     public bool TryToFindMovePath(TileCell cell, out List<TileCell> path)
     {        
         path = new Pathfinder(this).FindPath(Player.Tile, cell, forAttack: false);
-        if (path == null) return false;
+        if (path == null)
+        {
+            return false;
+        }
+
         CleanPath();
+
         if (path.Count - 1 <= Player.MoveRange)
         {
             for (int i = 1; i < path.Count; i++)
@@ -62,31 +67,146 @@ public class Map
         return true;
     }
 
-    public bool TryToFindAttackPath(TileCell cell, out List<TileCell> path)
-    {        
-        path = new Pathfinder(this).FindPath(Player.Tile, cell, forAttack: true);
-        if (path == null)
+    public bool TryToFindAttackPath(TileCell targetCell, out List<TileCell> path)
+    {
+        path = new List<TileCell>();
+
+        // 1) Try to attack from the current position
+        var directPath = new Pathfinder(this).FindPath(Player.Tile, targetCell, forAttack: true);
+        if (directPath != null && directPath.Count - 1 <= Player.AttackRange)
         {
-            return false;
+            CleanPath();
+            for (int i = 1; i < directPath.Count; i++)
+            {
+                directPath[i].Mark(TileState.AttackPath);
+            }             
+                        
+            return true;
         }
 
-        CleanPath();
-
-        if (path.Count - 1 <= Player.AttackRange)
+        // 2) Collect all the tiles around enemy in player's attack range
+        List<TileCell> candidates = new List<TileCell>();
+        foreach (var cell in GetCellsInRange(targetCell, Player.AttackRange))
         {
-            for (int i = 1; i < path.Count; i++)
+            if (cell.Tile.Type == TileType.Traversable && cell != targetCell)
             {
-                path[i].Mark(TileState.AttackPath);
-            }            
+                candidates.Add(cell);
+            }                
+        }
+
+        if (!candidates.Any())
+        {
+            return false;
+        }            
+
+        // 3) Check candidates if it's possible to attack from them
+        List<TileCell> validCandidates = new List<TileCell>();
+
+        foreach (var c in candidates)
+        {
+            var attackPath = new Pathfinder(this).FindPath(c, targetCell, forAttack: true);
+
+            if (attackPath != null)
+            {
+                int distance = attackPath.Count - 1;
+                if (distance <= Player.AttackRange)
+                {
+                    validCandidates.Add(c);
+                }
+            }
+        }
+
+        candidates = validCandidates;
+
+        if (candidates.Count == 0)
+        {
+            return false;
+        }            
+
+        // 4) Check conditates if it's reachable for player
+        var reachableCandidates = new List<(TileCell cell, List<TileCell> path)>();
+        foreach (var candidate in candidates)
+        {
+            var playerPath = new Pathfinder(this).FindPath(Player.Tile, candidate, forAttack: false);
+            if (playerPath != null)
+            {
+                reachableCandidates.Add((candidate, playerPath));
+            }                
+        }
+
+        if (!reachableCandidates.Any())
+        {
+            return false;
+        }            
+
+        // 5) Choose the best one (the shortest way)
+        var best = reachableCandidates.OrderBy(c => c.path.Count).First();
+        var bestPath = best.path;
+
+        // 6) If enemy is reacheble for attack
+        if (bestPath.Count - 1 <= Player.MoveRange)
+        {
+            CleanPath();
+                        
+            for (int i = 1; i < bestPath.Count; i++)
+            {
+                bestPath[i].Mark(TileState.MovePath);
+            }                
+                        
+            var attackPath = new Pathfinder(this).FindPath(best.cell, targetCell, forAttack: true);
+            for (int i = 1; i < attackPath.Count; i++)
+            {
+                attackPath[i].Mark(TileState.AttackPath);
+            }                
+
+            path = bestPath;            
+            return true;
         }
         else
         {
-            for (int i = 1; i < path.Count; i++)
+            // If enemy is reacheble but out of player moveRange
+            CleanPath();
+
+            for (int i = 1; i < bestPath.Count; i++)
+                bestPath[i].Mark(TileState.UnavailablePath);
+
+            var attackPath = new Pathfinder(this).FindPath(best.cell, targetCell, forAttack: true);
+            if (attackPath != null)
             {
-                path[i].Mark(TileState.UnavailableAttack);
-            }            
+                for (int i = 1; i < attackPath.Count; i++)
+                {
+                    attackPath[i].Mark(TileState.UnavailableAttack);
+                }                    
+            }
+
+            path = bestPath;
+            return false;
         }
-        return true;
+    }
+
+    private IEnumerable<TileCell> GetCellsInRange(TileCell center, int range)
+    {
+        for (int dx = -range; dx <= range; dx++)
+        {
+            for (int dy = -range; dy <= range; dy++)
+            {
+                if (Math.Abs(dx) + Math.Abs(dy) <= range)
+                {
+                    int nx = center.X + dx;
+                    int ny = center.Y + dy;
+                                        
+                    if (nx >= 0 && nx < Cells.GetLength(0) &&
+                        ny >= 0 && ny < Cells.GetLength(1))
+                    {
+                        var cell = Cells[nx, ny];
+                        if (cell != null)
+                        {
+                            yield return cell;
+                        }                            
+                    }
+                }
+            }
+        }
     }
 
     public void CleanPath()
@@ -162,7 +282,7 @@ public class Map
 
     public void RemoveEnemy()
     {
-        if (Enemy != null)
+        if(Enemy != null)
         {
             OnUnitRemoved?.Invoke(Enemy);
             Enemy = null;

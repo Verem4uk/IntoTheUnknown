@@ -61,7 +61,7 @@ public class MapView : MonoBehaviour
     {
         var tile = unit.Tile;
         GameObject playerObj = Instantiate(prefab, new Vector3(tile.X, 2, tile.Y), new Quaternion(), TilesTransform);
-        playerObj.GetComponent<UnitView>().Init(unit);   
+        playerObj.GetComponent<UnitView>().Init(unit);       
     }
 
     private void OnDestroyUnit(Unit unit)
