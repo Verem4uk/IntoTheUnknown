@@ -3,6 +3,20 @@ using UnityEngine;
 
 public class Pathfinder
 {
+    // Pathfinding algorithm explanation:
+    //
+    // We use the A* algorithm for pathfinding on the grid.
+    // A* was chosen because it is more efficient than a simple Breadth-First Search (BFS).
+    // While BFS guarantees the shortest path, it explores the map blindly.
+    // A* combines the cost from the start (g-cost) with a heuristic estimate (h-cost)
+    // to guide the search toward the target, making it much faster.
+    //
+    // For the heuristic, we use Manhattan distance:
+    //     h(x, y) = |x - targetX| + |y - targetY|
+    // This fits perfectly because movement is restricted to four directions
+    // (up, down, left, right). Unlike Euclidean distance, Manhattan distance
+    // matches the movement rules and ensures admissibility of the heuristic.
+
     private readonly Map Map;
 
     public Pathfinder(Map map)
